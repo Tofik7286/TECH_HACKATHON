@@ -1,0 +1,157 @@
+{% extends 'navbar.html' %}
+{% load static %}
+{% block title %}Product List{% endblock title %}
+{% block css %}
+<style>
+    .main-wrapper {
+        margin: 0 auto;
+        max-width: 1200px;
+        padding: 20px;
+    }
+    .page-header {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .product-bar li {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .product-bar li h4 {
+        margin-bottom: 0;
+    }
+    .slider-product img {
+        max-width: 100%;
+        border-radius: 10px;
+    }
+    .slider-product h4 {
+        margin-top: 10px;
+        text-align: center;
+    }
+    .timeline-widget {
+        list-style: none;
+        padding: 0;
+    }
+    .timeline-item {
+        margin-bottom: 20px;
+    }
+    .timeline-badge-wrap {
+        align-items: center;
+    }
+</style>
+{% endblock css %}
+{% block body %}
+
+<div class="main-wrapper">
+    <div class="page-wrapper">
+        <div class="content">
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h4>Product Details</h4>
+            </div>
+
+            <div class="row">
+                <!-- Product Details -->
+                <div class="col-lg-8 col-sm-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="productdetails">
+                                <ul class="product-bar">
+                                    <li><h4>Product Name</h4><h6>{{asset.asset_name}}</h6></li>
+                                    <li><h4>Category</h4><h6> {{ asset.asset_category.category }}</h6></li>
+                                    <li><h4>Sub Category</h4><h6>{% if asset.asset_category and asset.asset_category.category %}
+                                        {{ asset.asset_category }}
+                                        {% else %}
+                                        No Category
+                                        {% endif %}</h6></li>
+                                    <li><h4>Barcode</h4><h6>{{asset.barcode}}</h6></li>
+                                    <li><h4>Quantity</h4><h6>Piece</h6></li>
+                                    <li><h4>Price per Unit</h4><h6>PT0001</h6></li>
+                                 
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Product Image -->
+                <div class="col-lg-4 col-sm-12">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="slider-product-details">
+                                <div class="slider-product">
+                                    <img src="{% static 'assets/img/product/product69.jpg' %}" alt="Product Image">
+                                    <h4>{{asset.asset_name}}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        
+
+                <!-- Timeline Widget -->
+               <div class="col-lg-8">
+    <div class="card w-100">
+        <div class="card-body p-4">
+            <h5 class="card-title fw-semibold mb-4">{{asset.asset_name}}     TimeLine</h5>
+            <h6>
+                <a href="javascript:void(0)" class="text-primary d-block fw-normal">Barcode: {{asset.barcode}}</a>
+            </h6>
+            <ul class="timeline-widget list-unstyled">
+                <li class="timeline-item d-flex mb-4">
+                    <div class="timeline-time text-dark fw-bold me-3">09/10</div>
+                    <div class="timeline-badge-wrap">
+                        <span class="timeline-badge border-primary bg-primary"></span>
+                    </div>
+                    <div class="timeline-desc text-dark ms-3">Issued In Inventory</div>
+                </li>
+                <li class="timeline-item d-flex mb-4">
+                    <div class="timeline-time text-dark fw-bold me-3">18/10</div>
+                    <div class="timeline-badge-wrap">
+                        <span class="timeline-badge border-info bg-info"></span>
+                    </div>
+                    <div class="timeline-desc text-dark ms-3">User 1</div>
+                </li>
+                <li class="timeline-item d-flex mb-4">
+                    <div class="timeline-time text-dark fw-bold me-3">09/10</div>
+                    <div class="timeline-badge-wrap">
+                        <span class="timeline-badge border-primary bg-primary"></span>
+                    </div>
+                    <div class="timeline-desc text-dark ms-3">In Inventory</div>
+                </li>
+                <li class="timeline-item d-flex mb-4">
+                    <div class="timeline-time text-dark fw-bold me-3">18/10</div>
+                    <div class="timeline-badge-wrap">
+                        <span class="timeline-badge border-info bg-info"></span>
+                    </div>
+                    <div class="timeline-desc text-dark ms-3">User 2</div>
+                </li>
+                <li class="timeline-item d-flex mb-4">
+                    <div class="timeline-time text-dark fw-bold me-3">09/10</div>
+                    <div class="timeline-badge-wrap">
+                        <span class="timeline-badge border-primary bg-primary"></span>
+                    </div>
+                    <div class="timeline-desc text-dark ms-3">Inventory</div>
+                </li>
+                <li class="timeline-item d-flex mb-4">
+                    <div class="timeline-time text-dark fw-bold me-3">05/12</div>
+                    <div class="timeline-badge-wrap">
+                        <span class="timeline-badge border-info bg-info"></span>
+                    </div>
+                    <div class="timeline-desc text-dark ms-3">Maintenance</div>
+                </li>
+                <!-- Add more timeline items here -->
+            </ul>
+        </div>
+    </div>
+</div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,89 @@
+{% load static %}
+<!-- {% block title %} index {% endblock title %} -->
+{% block css %}
+<link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/img/favicon.jpg' %}">
+<link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/animate.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/dataTables.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/fontawesome.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/bootstrap-datetimepicker.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/select2/css/select2.min.css' %}">
+{% endblock css %}
+{% block body %}
+
+<div class="main-wrapper">
+    <div class="account-content">
+        <div style="background-color: #1786e5;  height: 10%; font-size: 45px; color: white;"><center>HARDWARE INVENTORY MANAGEMENT SYSTEM</center></div>
+       <div style="background-color: orange; font-weight: bold; height: 4%; font-size: 20px;"><center>“देश भक्ति - जन सेवा” /  “Desh Bakti - Jan Seva”</center></div>
+        <div class="login-wrapper" style="justify-content: center;">
+            <div class="login-content" style="box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.25);">
+                <div class="login-userset">
+                    <form action="{% url 'signin' %}" method="POST">
+                        {% csrf_token %}
+                    <center><div class="login-logo ">
+                      
+                        <img src="{% static 'assets/img/MP_LOGO.jpg' %}" alt="img"  style="width: 200px; height: auto;">
+                   
+                    </div> 
+                    <div class="login-userheading">
+                        <h3>Sign In</h3>
+                        <h4>Please login to your account</h4>
+                        {{e_msg}}
+                    </div></center>
+                    <div class="form-login">
+                        <label>Email</label>
+                        <div class="form-addons">
+                            <input type="text" placeholder="Enter your email address" name="email">
+                            <img src="{% static 'assets/img/icons/mail.svg' %}" alt="img">
+                        </div>
+                    </div>
+                    <div class="form-login">
+                        <label>Password</label>
+                        <div class="pass-group">
+                            <input type="password" class="pass-input" placeholder="Enter your password" name="password">
+                            <span class="fas toggle-password fa-eye-slash"></span>
+                        </div>
+                    </div>
+                    <div class="form-login">
+                        <div class="alreadyuser">
+                            <h4><a href="{% url 'forgetpassword' %}" class="hover-a">Forgot Password?</a></h4>
+                        </div>
+                    </div>
+                    <div class="form-login">
+                        <button type="submit" class="btn btn-login">SignIn</button>
+                    </div>
+                   
+                  
+                
+                </div></form>
+            </div>
+            <!-- <div class="login-img">
+                <img src="{% static 'assets/img/MP_LOGO.jpeg' %}" alt="img">
+            </div> -->
+        </div>
+    </div>
+
+</div>
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'assets/js/feather.min.js' %}"></script>
+
+    <script src="{% static 'assets/js/jquery.slimscroll.min.js' %}"></script>
+
+    <script src="{% static 'assets/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'assets/js/dataTables.bootstrap4.min.js' %}"></script>
+
+    <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+
+    <script src="{% static 'assets/plugins/apexchart/apexcharts.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/apexchart/chart-data.js' %}"></script>
+
+    <script src="{% static 'assets/js/script.js' %}"></script>
+    <script src="{% static 'assets/js/moment.min.js' %}"></script>
+    <script src="{% static 'assets/js/bootstrap-datetimepicker.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/select2/js/select2.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/sweetalert/sweetalerts.min.js' %}"></script>
+
+{% endblock %}

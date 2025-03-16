@@ -1,0 +1,223 @@
+{% extends 'navbar.html' %}
+{% load static %}
+{% block title %} productlist {% endblock title %}
+{% block css %}
+{% endblock css %}
+{% block body %}
+
+<div class="main-wrapper">
+    <div class="page-wrapper">
+        <div class="content">
+
+
+
+            <div class="page-header">
+                <div class="page-title">
+                    <h4>Product List</h4>
+                    <h6>Manage your products</h6>
+                </div>
+
+                <div class="page-btn">
+                    <a href="{% url 'addproduct' %}" class="btn btn-added"><img
+                            src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add New Product</a>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-body">
+
+                    <div class="table-top">
+                        <div class="search-set">
+                            <div class="search-path">
+                                <a class="btn btn-filter" id="filter_search">
+                                    <img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
+                                    <span><img src="{% static 'assets/img/icons/closes.svg' %}" alt="img"></span>
+                                </a>
+                            </div>
+                            <div class="search-input">
+                                <a class="btn btn-searchset"><img src="{% static 'assets/img/icons/search-white.svg' %}"
+                                        alt="img"></a>
+                            </div>
+                        </div>
+                        <div class="wordset">
+                            <ul>
+                                <li>
+                                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img
+                                            src="{% static 'assets/img/icons/pdf.svg' %}" alt="img"></a>
+                                </li>
+                                <li>
+                                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img
+                                            src="{% static 'assets/img/icons/excel.svg' %}" alt="img"></a>
+                                </li>
+                                <li>
+                                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img
+                                            src="{% static 'assets/img/icons/printer.svg' %}" alt="img"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card mb-0" id="filter_inputs">
+                        <div class="card-body pb-0">
+                            <div class="row">
+                                <div class="col-lg-12 col-sm-12">
+                                    <div class="row">
+                                        <div class="col-lg col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <select class="select">
+                                                    <option>Choose Product</option>
+                                                    <option>Macbook pro</option>
+                                                    <option>Orange</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <select class="select">
+                                                    <option>Choose Category</option>
+                                                    <option>Computers</option>
+                                                    <option>Fruits</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <select class="select">
+                                                    <option>Choose Sub Category</option>
+                                                    <option>Computer</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <select class="select">
+                                                    <option>Brand</option>
+                                                    <option>N/D</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg col-sm-6 col-12 ">
+                                            <div class="form-group">
+                                                <select class="select">
+                                                    <option>Price</option>
+                                                    <option>150.00</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-1 col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <a class="btn btn-filters ms-auto"><img
+                                                        src="assets/img/icons/search-whites.svg" alt="img"></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table  datanew">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <label class="checkboxs">
+                                            <input type="checkbox" id="select-all">
+                                            <span class="checkmarks"></span>
+                                        </label>
+                                    </th>
+                                    <th>Product Name</th>
+                                    <th>Barcode</th>
+                                    <th>Category </th>
+                                    <th>Sub-category</th>
+                                    <th>Status</th>
+                                    <th>Value</th>
+                                    <th>Condition</th>
+                                    <th>Maintenance Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for asset in asset %}
+                                <tr>
+                                    <td>
+                                        <label class="checkboxs">
+                                            <input type="checkbox">
+                                            <span class="checkmarks"></span>
+                                        </label>
+                                    </td>
+                                    <td class="productimgname">
+                                        <a href="javascript:void(0);" class="product-img">
+                                            <img src="{% static 'assets/img/product/product6.jpg' %}" alt="product">
+                                        </a>
+                                        <a href="javascript:void(0);">{{ asset.asset_name }}</a>
+                                    </td>
+                                    <td> {% if asset.barcode %}
+                                        {{ asset.barcode }}
+                                        {% else %}
+                                        <span class="text-danger">ADD BARCODE!</span>
+                                        {% endif %}
+                                    </td>
+                                    <td> 
+                                        {{ asset.asset_category.category }}
+                                        </td>
+                                    <td> {% if asset.asset_category and asset.asset_category.category %}
+                                        {{ asset.asset_category }}
+                                        {% else %}
+                                        No Category
+                                        {% endif %}
+                                    </td>
+                                    <td>{% if asset.asset_status == 'available' %}
+                                        <span class="badges bg-lightgreen">Available</span>
+                                        {% elif asset.asset_status == 'in-use' %}
+                                        <span class="badges bg-lightyellow">In-Use</span>
+                                        {% elif asset.asset_status == 'in-maintenance' %}
+                                        <span  class="badges bg" style="background-color: rgb(108, 108, 193);">In-Maintenance</span>
+                                        {% elif asset.asset_status == 'expired' %}
+                                        <span class="badges bg-lightred">Expired</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ asset.asset_value }}</td>
+                                    <td> {% if asset.condition == 'good' %}
+                                        <span class="badges bg-lightgreen">Good</span>
+                                        {% elif asset.condition == 'average' %}
+                                        <span class="badges bg-lightyellow">Average</span>
+                                        {% elif asset.condition == 'belowaverage' %}
+                                        <span class="badges bg-lightred">BelowAverage</span>
+                                        {% endif %}
+                                    </td>
+                                    <td> {% if asset.asset_maintenance_date %}
+                                        {{ asset.asset_maintenance_date|date:"d M Y" }}
+                                        {% else %}
+                                        N/A
+                                        {% endif %}</td>
+                                    <td>
+                                        <a class="me-3" href="{% url 'productdetails' asset.asset_id  %}">
+                                            <img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
+                                        </a>
+                                        <a class="me-3" href="{% url 'editproduct' asset.asset_id %}">
+                                            <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
+                                        </a>
+                                        <a class="me-3 confirm-text" href="javascript:void(0);">
+                                            <img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+
+
+
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+{% endblock %}

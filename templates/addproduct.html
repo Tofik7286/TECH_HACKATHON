@@ -1,0 +1,132 @@
+{% extends 'navbar.html' %}
+
+{% load static %}
+{% block title %} Index {% endblock title %}
+{% block css %}
+{% endblock css %}
+{% block body %}
+
+<div class="main-wrapper">
+    <div class="page-wrapper">
+        <div class="content">
+
+            <div class="page-header">
+                <div class="page-title">
+                    <h4>Product Add</h4>
+                    <h6>Create new product</h6>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-3 col-sm-3 col-6">
+                                <div class="form-group">
+                                    <label>Product Name</label>
+                                    <input type="text" name="productname">
+                                </div>
+                            </div>
+                            <!-- <div class="col-lg-3 col-sm-3 col-6">
+                            <div class="form-group">
+                                <label>Barcode</label>
+                                <input type="text">
+                            </div>
+                            </div> -->
+                            <div class="col-lg-3 col-sm-3 col-6">
+                                <div class="form-group">
+                                    <label>Category</label>
+                                    <select class="select" name="category_name">
+                                        <option>Choose Category</option>
+                                        {% for category in categories %}
+                                        <option value="{{category.sub_category_name}}">{{category.sub_category_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-6">
+                                <div class="form-group">
+                                    <label>Purchase Date</label>
+                                    <input type="date" name="purchasedate" id="purchase_date">
+                                </div>
+                            </div>
+                            <!-- <div class="col-lg-3 col-sm-3 col-6">
+                            <div class="form-group">
+                                <label>Sub Category</label>
+                                <select class="select">
+                                    <option>Choose Sub Category</option>
+                                    <option>Fruits</option>
+                                </select>
+
+
+                            </div>
+                            </div> -->
+                            <!-- <div class="col-lg-3 col-sm-3 col-6">
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select class="select">
+                                    <option>Choose Brand</option>
+                                    <option>Brand</option>
+                                </select>
+
+
+                            </div>
+                            </div> -->
+                            <div class="col-lg-3 col-sm-3 col-6">
+                                <div class="form-group">
+                                    <label>Value</label>
+                                    <input type="text" name="productvalue">
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-6">
+                                <div class="form-group">
+                                    <label>Condition</label>
+                                    <select class="select" name="condition" required>
+                                        <option value="good">Good</option>
+                                        <option value="average">Average</option>
+                                        <option value="below-average">Below Average</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-6">
+                                <div class="form-group">
+                                    <label>Maintenance Date</label>
+                                    <input type="date" id="maintenance_date" name="maintenance_date" readonly>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <button class="btn btn-submit me-2">Submit</button>
+                                <a href="{% url 'productlist' %}" class="btn btn-cancel">Cancel</a>
+                            </div>
+
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+</div>
+<script>
+    // JavaScript to dynamically calculate maintenance date
+    document.getElementById('purchase_date').addEventListener('change', function() {
+        const purchaseDate = new Date(this.value); // Get the selected purchase date
+        if (purchaseDate) {
+            // Add 6 months to the purchase date
+            const maintenanceDate = new Date(purchaseDate.setMonth(purchaseDate.getMonth() + 6));
+            // Format the maintenance date as yyyy-mm-dd
+            const year = maintenanceDate.getFullYear();
+            const month = String(maintenanceDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+            const day = String(maintenanceDate.getDate()).padStart(2, '0');
+            // Set the maintenance date in the form
+            document.getElementById('maintenance_date').value = `${year}-${month}-${day}`;
+        }
+    });
+</script>
+
+
+{% endblock %}
+

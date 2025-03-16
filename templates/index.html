@@ -1,0 +1,229 @@
+{% extends 'navbar.html' %}
+{% load static %}
+{% block title %} Index {% endblock title %}
+{% block css %}
+
+{% endblock css %}
+{% block body %}
+<div class="main-wrapper">
+
+
+
+    <div class="page-wrapper">
+        <div class="content">
+            <div class="row">
+                <div class="col-lg-3 col-sm-6 col-12 d-flex">
+                    <div class="dash-count">
+                        <div class="dash-counts">
+                            <h4>{{userCount}}</h4>
+                            <h5>Total Users</h5>
+                        </div>
+                        <div class="dash-imgs">
+                            <i data-feather="user"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 col-12 d-flex">
+                    <div class="dash-count das1">
+                        <div class="dash-counts">
+                            <h4>{{assetCount}}</h4>
+                            <h5>Total Products</h5>
+                        </div>
+                        <div class="dash-imgs">
+                            <i data-feather="user-check"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 col-12 d-flex">
+                    <div class="dash-count das2">
+                        <div class="dash-counts">
+                            <h4>{{availableAsset}}</h4>
+                            <h5>Available In Inventory</h5> <!-- Available in inventory -->
+                        </div>
+                        <div class="dash-imgs">
+                            <i data-feather="file-text"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 col-12 d-flex">
+                    <div class="dash-count das3">
+                        <div class="dash-counts">
+                            <h4>{{inUseAsset}}</h4>
+                            <h5>In-Use Products</h5>
+                        </div>
+                        <div class="dash-imgs">
+                            <i data-feather="file"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center;">
+                <div class="col-lg-6 col-sm-12 col-12"
+                    style="flex: 1; min-width: 300px; max-width: 600px; display: flex;">
+                    <div class="card" style="flex-grow: 1; padding: 16px; margin: 10px; height: auto;">
+                        <div class="card-header"
+                            style="background-color: #f8f9fc; padding: 15px; border-bottom: 1px solid #e3e6f0;">
+                            <div class="card-title" style="font-size: 18px; font-weight: bold; color: #333;">
+                                Products Conditions
+                            </div>
+                        </div>
+                        <div class="card-body"
+                            style="padding: 16px; display: flex; justify-content: center; align-items: center;">
+                            <canvas id="chartBar3" style="max-width: 100%; height: 250px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-sm-12 col-12"
+                    style="flex: 1; min-width: 300px; max-width: 600px; display: flex;">
+                    <div class="card" style="flex-grow: 1; padding: 16px; margin: 10px; height: auto;">
+                        <div class="card-header">
+                            <div class="card-title" style="font-size: 18px; font-weight: bold; color: #333;">
+                                Assigned Products
+                            </div>
+                            
+                        </div>
+                        <div class="card-body"
+                            style="padding: 16px; display: flex; justify-content: center; align-items: center;">
+                            <canvas id="chartDonut" style="max-width: 100%; height: 250px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-0">
+                <div class="card-body">
+                    <h4 class="card-title">Due Date Soon Products</h4>
+                    <div class="table-responsive dataview">
+                        <table class="table datatable ">
+                            <thead>
+                                <tr>
+                                    <th>SNo</th>
+                                    <th>Product BarCode</th>
+                                    <th>Product Name</th>
+                                    <th>Brand Name</th>
+                                    <th>Category Name</th>
+                                    <th>Expiry Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="application/json" id="stationNamesData">{{ station_names|safe }}</script>
+<script type="application/json" id="totalProductsData">{{ total_products|safe }}</script>
+<script type="application/json" id="conditionData">{{ condition_data|safe }}</script>
+
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const stationNames = JSON.parse(document.getElementById('stationNamesData').textContent);
+        const totalProducts = JSON.parse(document.getElementById('totalProductsData').textContent);
+
+        console.log('Station Names:', stationNames);
+        console.log('Total Products:', totalProducts);
+
+        const ctx = document.getElementById('chartDonut').getContext('2d');
+
+        const myPieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: stationNames, // Use station names
+                datasets: [{
+                    label: 'Product Distribution',
+                    data: totalProducts, // Use total products
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF45b0', '#FFBD34', '#FEBF456'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                onClick: function (event, elements) {
+                    if (elements.length > 0) {
+                        const index = elements[0].index; // Get the index of the clicked segment
+                        const stationName = stationNames[index]; // Get the station name
+                        // Redirect to the product list with the station filter
+                        window.location.href = `{% url 'productlist' %}?filter=${stationName}`;
+                    }
+                }
+            }
+        });
+    });
+
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const conditions = JSON.parse(document.getElementById('conditionData').textContent);
+        const ctx = document.getElementById('chartBar3').getContext('2d');
+    
+        const labels = conditions.map(data => data.condition);
+        const dataPoints = conditions.map(data => data.total);
+    
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, '#36A2EB'); // Light blue at the top
+        gradient.addColorStop(1, '#4BC0C0'); // Light green at the bottom
+    
+        const data = {
+            labels: labels,
+            datasets: [{
+                label: 'Condition',
+                data: dataPoints,
+                backgroundColor: gradient,
+                hoverBackgroundColor: '#5AD3D1',
+                borderColor: '#36A2EB',
+                borderWidth: 1
+            }]
+        };
+    
+        const options = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f0f0f0'
+                    }
+                }
+            }
+        };
+    
+        new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: options
+        });
+    });
+    </script>
+    
+
+
+
+
+
+{% endblock %}

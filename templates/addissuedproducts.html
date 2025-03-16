@@ -1,0 +1,82 @@
+{% extends 'navbar.html' %}
+
+{% load static %}
+{% block title %} Index {% endblock title %}
+{% block css %}
+{% endblock css %}
+{% block body %}
+<div class="main-wrapper">
+
+
+    <div class="page-wrapper">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-title">
+                    <h4>Add Issued Products</h4>
+                    <h6>Add/Update Issued Products</h6>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+
+                    <div class="row">
+                        <form action="" method="">
+                        <div class="col-lg-3 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Product Name</label>
+                                <input type="text" name="asset_name">
+
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Barcode</label>
+                                <input type="text" name="barcode">
+                              
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Issue Date</label>
+                                <div class="input-groupicon">
+                                    <input type="text" name="issue_date" class="datetimepicker">
+                                    <div class="addonset">
+                                        <img src="{% static 'assets/img/icons/calendars.svg' %}" alt="img">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Return Date</label>
+                                <div class="input-groupicon">
+                                    <input type="text" name="return_date" class="datetimepicker">
+                                    <div class="addonset">
+                                        <img src="{% static 'assets/img/icons/calendars.svg' %}" alt="img">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>User</label>
+                                <input type="text" name="user">
+                            </div>
+                        </div>
+                    </form>
+                    </div>
+
+                        <div class="col-lg-12">
+                            <a href="javascript:void(0);" class="btn btn-submit me-2">Submit</a>
+                            <a href="{% url 'issuedproducts' %}" class="btn btn-cancel">Cancel</a>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

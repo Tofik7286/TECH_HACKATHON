@@ -1,0 +1,56 @@
+{% extends 'navbar.html' %}
+{% load static %}
+{% block title %} index {% endblock title %}
+{% block css %}
+{% endblock css %}
+{% block body %}
+
+
+
+<div class="main-wrapper">
+    <div class="page-wrapper">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-title">
+                    <h4>Stations Management</h4>
+                    <h6>Edit/Update Stations</h6>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form action="{% url 'editstation' i.station_id  %}" method="post">
+                        {% csrf_token %}
+                    <div class="row">
+                        <div class="col-lg-3 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Station Name</label>
+                                <input type="text" name="station_name" value="{{i.station_name}}">
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Station Code</label>
+                                <input type="text" name="station_code" value="{{i.station_code}}">
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Station address</label>
+                                <input type="text" name="station_address" value="{{i.station_address}}">
+                            </div>
+                        </div>
+                        <div class="col-lg-12">
+                            <input type="submit" class="btn btn-submit me-2" data-dismiss="modal" value="Edit">
+                            <a href="{% url 'stationlist' %}"><input type="submit" class="btn btn-cancel" value="Cancel"></a>
+                        </div>
+                    </div>
+                </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
