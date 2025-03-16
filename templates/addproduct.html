@@ -27,12 +27,6 @@
                                     <input type="text" name="productname">
                                 </div>
                             </div>
-                            <!-- <div class="col-lg-3 col-sm-3 col-6">
-                            <div class="form-group">
-                                <label>Barcode</label>
-                                <input type="text">
-                            </div>
-                            </div> -->
                             <div class="col-lg-3 col-sm-3 col-6">
                                 <div class="form-group">
                                     <label>Category</label>
@@ -50,28 +44,6 @@
                                     <input type="date" name="purchasedate" id="purchase_date">
                                 </div>
                             </div>
-                            <!-- <div class="col-lg-3 col-sm-3 col-6">
-                            <div class="form-group">
-                                <label>Sub Category</label>
-                                <select class="select">
-                                    <option>Choose Sub Category</option>
-                                    <option>Fruits</option>
-                                </select>
-
-
-                            </div>
-                            </div> -->
-                            <!-- <div class="col-lg-3 col-sm-3 col-6">
-                            <div class="form-group">
-                                <label>Status</label>
-                                <select class="select">
-                                    <option>Choose Brand</option>
-                                    <option>Brand</option>
-                                </select>
-
-
-                            </div>
-                            </div> -->
                             <div class="col-lg-3 col-sm-3 col-6">
                                 <div class="form-group">
                                     <label>Value</label>
@@ -98,15 +70,17 @@
                                 <button class="btn btn-submit me-2">Submit</button>
                                 <a href="{% url 'productlist' %}" class="btn btn-cancel">Cancel</a>
                             </div>
-
                         </div>
                     </form>
 
+                    <form method="POST" action="{% url 'import_products' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="file" name="file" accept=".csv, .xlsx">
+                        <button type="submit">Import Products</button>
+                    </form>
+                   
                 </div>
             </div>
-
-
-
         </div>
     </div>
 </div>
@@ -126,7 +100,4 @@
         }
     });
 </script>
-
-
 {% endblock %}
-

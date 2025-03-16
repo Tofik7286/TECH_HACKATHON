@@ -42,18 +42,24 @@
                         </div>
                         <div class="wordset">
                             <ul>
-                                <li>
+                                {% comment %} <li>
                                     <a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img
                                             src="{% static 'assets/img/icons/pdf.svg' %}" alt="img"></a>
-                                </li>
-                                <li>
-                                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img
+                                </li> {% endcomment %}
+                        
+
+                        
+                                    <a href="{% url "export_products" %}">Export</a>
+                                {% comment %} export products {% endcomment %}
+                                 
+
+                                    {% comment %} <a data-bs-toggle="tooltip" data-bs-placement="top"  href="{% url "import_products" %}" title="excel"><img
                                             src="{% static 'assets/img/icons/excel.svg' %}" alt="img"></a>
-                                </li>
-                                <li>
+                                </li> {% endcomment %}
+                                {% comment %} <li>
                                     <a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img
                                             src="{% static 'assets/img/icons/printer.svg' %}" alt="img"></a>
-                                </li>
+                                </li> {% endcomment %}
                             </ul>
                         </div>
                     </div>
@@ -199,7 +205,7 @@
                                         <a class="me-3" href="{% url 'editproduct' asset.asset_id %}">
                                             <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
                                         </a>
-                                        <a class="me-3 confirm-text" href="javascript:void(0);">
+                                        <a class="me-3 confirm-text" href="{% url 'deleteproduct' id=id %}">
                                             <img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
                                         </a>
                                     </td>

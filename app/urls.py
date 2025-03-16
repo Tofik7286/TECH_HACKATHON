@@ -24,8 +24,10 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('api/login/', views.login_view, name='login'),
     path('api/categories/', views.get_categories, name='get-categorys'),
-    path('api/conditions/', views.get_condition_choices, name='get_condition_choices'),
-    path('api/add_product/', views.add_product, name='addProduct'),  # Update this line
+    path('api/conditions/', views.get_condition_choices,
+         name='get_condition_choices'),
+    path('api/add_product/', views.add_product,
+         name='addProduct'),  # Update this line
     path('api/users/', views.user_list_view, name='userlist'),
     path('api/totals/', views.get_totals, name='get_totals'),
     path('api/user/totals/', views.get_user_totals, name='get_user_totals'),
@@ -33,15 +35,18 @@ urlpatterns = [
     path('api/asset/', views.AssetListView, name='asset-list'),
     path('api/user/asset/', views.UserAssetListView, name='user-asset-list'),
     path('api/products/by-subcategory', views.AssetListView, name='asset_list'),
-    path('api/categories/<int:id>/', views.SubcategoryListAPIView, name='subcategory_list'),
-    path('api/products/<str:barcode>/', views.get_product_by_barcode, name='get_product_by_barcode'),# Update this line
+    path('api/categories/<int:id>/',
+         views.SubcategoryListAPIView, name='subcategory_list'),
+    path('api/products/<str:barcode>/', views.get_product_by_barcode,
+         name='get_product_by_barcode'),  # Update this line
     # path('api/assets/', views.AssetList, name='asset-list'),
-    path('api/update-barcode/<str:asset_id>/', views.update_barcode, name='update-barcode'),
+    path('api/update-barcode/<str:asset_id>/',
+         views.update_barcode, name='update-barcode'),
     path('api/requests/', views.get_requests, name='get_requests'),
 
-    
-    path('signin',views.signin, name='signin'),
-    path('logout',views.logout, name='logout'),
+
+    path('signin', views.signin, name='signin'),
+    path('logout', views.logout, name='logout'),
 
 
     path('productlist', views.productlist, name='productlist'),
@@ -65,14 +70,19 @@ urlpatterns = [
     # path('deleteissued/<int:id>', views.deleteissued, name='deleteissued'),
 
 
-    path('maintenanceproducts', views.maintenanceproducts, name='maintenanceproducts'),
-    path('editmaintenanceproducts/<int:id>', views.editmaintenanceproducts, name='editmaintenanceproducts'),
-    path('addmaintenanceproducts', views.addmaintenanceproducts, name='addmaintenanceproducts'),
-    path('deletemaintenance/<int:id>', views.deletemaintenance, name='deletemaintenance'),
+    path('maintenanceproducts', views.maintenanceproducts,
+         name='maintenanceproducts'),
+    path('editmaintenanceproducts/<int:id>',
+         views.editmaintenanceproducts, name='editmaintenanceproducts'),
+    path('addmaintenanceproducts', views.addmaintenanceproducts,
+         name='addmaintenanceproducts'),
+    path('deletemaintenance/<int:id>',
+         views.deletemaintenance, name='deletemaintenance'),
 
 
     path('expiredproducts', views.expiredproducts, name='expiredproducts'),
-    path('editexpiredproducts/<int:id>', views.editexpiredproducts, name='editexpiredproducts'),
+    path('editexpiredproducts/<int:id>',
+         views.editexpiredproducts, name='editexpiredproducts'),
     path('addexpiredproducts', views.addexpiredproducts, name='addexpiredproducts'),
     path('deleteexpired/<int:id>', views.deleteexpired, name='deleteexpired'),
 
@@ -87,31 +97,44 @@ urlpatterns = [
     path('edituser', views.edituser, name='edituser'),
 
 
-    path('expenselist',views.expenseList, name='expenseList'),
-    path('createexpense',views.createExpense, name='createExpense'),
-    path('editexpense',views.editExpense, name='editExpense'),
-    path('expensecategory',views.expenseCategory, name='expenseCategory'),
-    path('quotationlist',views.quotationList, name='quotationList'),
-    path('addquotation',views.addquotation, name='addquotation'),
-    path('newstation',views.newstation, name='newstation'),
-    path('stationlist',views.stationlist, name='stationlist'),
-    path('editstation/<int:id>',views.editstation, name='editstation'),
-    path('deletestation/<int:id>',views.deletestation, name='deletestation'),
+    path('expenselist', views.expenseList, name='expenseList'),
+    path('createexpense', views.createExpense, name='createExpense'),
+    path('editexpense', views.editExpense, name='editExpense'),
+    path('expensecategory', views.expenseCategory, name='expenseCategory'),
+    path('quotationlist', views.quotationList, name='quotationList'),
+    path('addquotation', views.addquotation, name='addquotation'),
+    path('newstation', views.newstation, name='newstation'),
+    path('stationlist', views.stationlist, name='stationlist'),
+    path('editstation/<int:id>', views.editstation, name='editstation'),
+    path('deletestation/<int:id>', views.deletestation, name='deletestation'),
 
-    path('editquotation',views.editQuotation, name='editQuotation'),
-    path('editexpense',views.editExpense, name='editExpense'),
-    path('profile',views.profile, name='profile'),
-    path('generalsettings',views.generalSettings, name='generalSettings'),
-    path('forgetpassword',views.forgetpassword, name='forgetpassword'),
-    path('signup',views.signup, name='signup'),
- 
-    path('api/assign_product/', views.assign_product, name='assignProduct'),  # Update this line
+    path('editquotation', views.editQuotation, name='editQuotation'),
+    path('editexpense', views.editExpense, name='editExpense'),
+    path('profile', views.profile, name='profile'),
+    path('generalsettings', views.generalSettings, name='generalSettings'),
+    path('forgetpassword', views.forgetpassword, name='forgetpassword'),
+    path('signup', views.signup, name='signup'),
+
+    path('api/assign_product/', views.assign_product,
+         name='assignProduct'),  # Update this line
     # path('api/assets/', views.AssetList, name='asset-list'),
     path('api/assets/', views.AssetListView, name='asset-list'),
     # path('pie_chart_view', views.pie_chart_view, name='pie_chart_view-list'),
     # path('generate_pie_chart', views.generate_pie_chart, name='generate_pie_chart-list'),
 
+
+
+    # import export
+    path('import_products_html/', views.import_products_html,
+         name='import_products_html'),
+    path('import-products/', views.import_products, name='import_products'),
+    path('export-products/', views.export_products, name='export_products'),
+
+
+    # delete products
+    path('deleteproduct/<int:id>', views.deleteproduct, name='deleteproduct'),
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

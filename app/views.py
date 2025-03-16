@@ -1,3 +1,7 @@
+from datetime import datetime
+from django.shortcuts import render, redirect
+from datetime import timedelta
+from .models import Asset, AssetSubCategory, AssetCategory
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
@@ -6,18 +10,23 @@ from rest_framework.response import Response
 from rest_framework import status
 from app.models import *
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import login as django_login
 from django.contrib.auth import login as django_login
 from .serializers import ProductSerializer, LoginSerializer, AssignSerializer, AssetSerializer, UserSerializer, BarcodeUpdateSerializer, RequestAssetSerializer, SubcategorySerializer, AllocationSerializer
 from django.utils import timezone
+from datetime import datetime
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.serializers.json import DjangoJSONEncoder
 from geopy.geocoders import Nominatim
 from django.db.models import Count
 import json
+import csv
+from django.http import HttpResponse
+from django.core.files.storage import FileSystemStorage
+import pandas as pd
+from django.db import transaction
 
 
 @api_view(['POST'])
@@ -158,12 +167,13 @@ def add_product(request):
         )
 
         # Uncomment if maintenance needs to be created
-        # Maintenance.objects.create(
-        #     asset=asset,
-        #     last_maintenance_date=asset.purchase_date,
-        #     next_maintenance_date=asset.purchase_date + timedelta(days=180),  # Example: 180 days after purchase
-        #     maintenance_cost='N/A',  # Set a default cost or pass it from the request
-        # )
+        Maintenance.objects.create(
+            asset=asset,
+            last_maintenance_date=asset.purchase_date,
+            next_maintenance_date=asset.purchase_date +
+            timedelta(days=180),  # Example: 180 days after purchase
+            maintenance_cost='N/A',  # Set a default cost or pass it from the request
+        )
 
         return Response({"message": "Product added successfully!", "location_name": specific_area_name}, status=201)
 
@@ -452,31 +462,80 @@ def productdetails(request, id):
     return render(request, 'productdetails.html', context)
 
 
+# def addproduct(request):
+#     if request.method == 'POST':
+#         # Get data from the form
+#         product_name = request.POST.get('productname')
+#         # Assume you pass category ID
+#         category = request.POST.get('category_name')
+#         purchase_date = request.POST.get('purchasedate')
+#         asset_value = request.POST.get('productvalue')
+#         condition = request.POST.get('condition')
+#         maintenance_date = request.POST.get('maintenance_date')
+
+#         print(product_name)
+
+#         categoryGet = AssetSubCategory.objects.get(sub_category_name=category)
+
+#         Asset.objects.create(
+#             asset_name=product_name,
+#             asset_category=categoryGet,
+#             purchase_date=purchase_date,
+#             asset_value=asset_value,
+#             condition=condition,
+#             asset_maintenance_date=maintenance_date,
+#         )
+
+#         return redirect('productlist')
+#     categories = AssetSubCategory.objects.all()
+#     return render(request, 'addproduct.html', {'categories': categories})
+
+
 def addproduct(request):
     if request.method == 'POST':
-        # Get data from the form
         product_name = request.POST.get('productname')
-        # Assume you pass category ID
-        category = request.POST.get('category_name')
+        sub_category_name = request.POST.get('category_name')
         purchase_date = request.POST.get('purchasedate')
         asset_value = request.POST.get('productvalue')
         condition = request.POST.get('condition')
         maintenance_date = request.POST.get('maintenance_date')
 
-        print(product_name)
+        # Validate and parse dates
+        try:
+            if purchase_date:
+                purchase_date = datetime.strptime(
+                    purchase_date, '%Y-%m-%d').date()
+            else:
+                purchase_date = None
+            if maintenance_date:
+                maintenance_date = datetime.strptime(
+                    maintenance_date, '%Y-%m-%d').date()
+            else:
+                maintenance_date = None
+        except ValueError as e:
+            return HttpResponse(f'Invalid date format: {e}', status=400)
 
-        categoryGet = AssetSubCategory.objects.get(sub_category_name=category)
+        try:
+            sub_category = AssetSubCategory.objects.get(
+                sub_category_name=sub_category_name)
+        except AssetSubCategory.DoesNotExist:
+            category_name = request.POST.get('category_name')
+            category, created = AssetCategory.objects.get_or_create(
+                category_name=category_name)
+            sub_category = AssetSubCategory(
+                sub_category_name=sub_category_name, category=category)
+            sub_category.save()
 
         Asset.objects.create(
             asset_name=product_name,
-            asset_category=categoryGet,
+            asset_category=sub_category,
             purchase_date=purchase_date,
             asset_value=asset_value,
             condition=condition,
             asset_maintenance_date=maintenance_date,
         )
-
         return redirect('productlist')
+
     categories = AssetSubCategory.objects.all()
     return render(request, 'addproduct.html', {'categories': categories})
 
@@ -837,3 +896,112 @@ def assign_product(request):
     else:
         print("Validation Errors:", serializer.errors)
         return Response(serializer.errors, status=400)
+
+
+# import and export product
+# Function to import products
+def import_products_html(req):
+    return render(req, 'import-products.html')
+
+
+@csrf_exempt
+def import_products(request):
+    if request.method == 'POST' and request.FILES['file']:
+        file = request.FILES['file']
+        if not (file.name.endswith('.csv') or file.name.endswith('.xlsx')):
+            return HttpResponse('Invalid file type. Please upload a CSV or Excel file.', status=400)
+
+        try:
+            if file.name.endswith('.csv'):
+                df = pd.read_csv(file)
+            elif file.name.endswith('.xlsx'):
+                df = pd.read_excel(file)
+        except Exception as e:
+            print(f'Error reading file: {e}')
+            return HttpResponse(f'Error reading file: {e}', status=400)
+
+        def parse_date(date_value):
+            try:
+                if pd.isna(date_value):
+                    return None
+                if isinstance(date_value, pd.Timestamp):
+                    date_value = date_value.strftime('%Y-%m-%d')
+                return datetime.strptime(date_value, '%Y-%m-%d').date()
+            except ValueError:
+                return None
+
+        try:
+            with transaction.atomic():
+                for index, row in df.iterrows():
+                    # Print the contents of each row for debugging
+                    print(f'Row {index}: {row}')
+                    asset_name = row.get('asset_name')
+                    barcode = row.get('barcode')
+                    # category_name = row.get('category_name')
+                    sub_category_name = row.get('sub_category_name')
+                    purchase_date = parse_date(row.get('purchase_date'))
+                    asset_value = row.get('asset_value')
+                    condition = row.get('condition')
+
+                    if not all([asset_name, barcode, asset_value, condition]):
+                        print(f'Missing required fields in row {index}')
+                        continue
+
+                    if purchase_date is None:
+                        print(f'Invalid date format in row {index}')
+                        continue
+
+                    # Ensure the sub_category and category are saved before creating the asset
+                    # category, created = AssetCategory.objects.get_or_create(
+                    #     category_name=category_name)
+                    # sub_category, created = AssetSubCategory.objects.get_or_create(
+                    #     sub_category_name=sub_category_name,
+                    #     defaults={'category': category}
+                    # )
+
+                    print(f'Creating asset: {asset_name}')
+                    Asset.objects.create(
+                        asset_name=asset_name,
+                        barcode=barcode,
+                        asset_category=sub_category_name,
+                        purchase_date=purchase_date,
+                        asset_value=asset_value,
+                        condition=condition,
+                    )
+
+            print('Products imported successfully')
+            return HttpResponse('Products imported successfully')
+        except Exception as e:
+            print(f'Error saving products: {e}')
+            return HttpResponse(f'Error saving products: {e}', status=500)
+
+    print('Invalid request')
+    return HttpResponse('Invalid request. Please upload a CSV or Excel file.', status=400)
+
+
+def export_products(request):
+    assets = Asset.objects.all()
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="products.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['asset_name', 'barcode', 'category_name',
+                    'purchase_date', 'asset_value', 'condition'])
+    for asset in assets:
+        writer.writerow([
+            asset.asset_name,
+            asset.barcode,
+            asset.asset_category.category.category_name if asset.asset_category and asset.asset_category.category else '',
+            asset.purchase_date,
+            asset.asset_value,
+            asset.condition,
+        ])
+
+    return response
+
+
+# delete products
+def deleteproduct(request, id):
+    asset = Asset.objects.get(id=id)
+    asset.delete()
+    return redirect('productlist')

@@ -1,0 +1,21 @@
+{% extends 'navbar.html' %}
+
+{% load static %}
+{% block title %} Index {% endblock title %}
+{% block css %}
+{% endblock css %}
+{% block body %}
+
+{% block content %}
+<h2>Import Products</h2>
+
+<center style="margin-top: 50px;">
+<form method="POST" action="{% url 'import_products' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="file" accept=".csv, .xlsx">
+    <button type="submit">Import Products</button>
+</form>
+</center>
+{% endblock %}
+
+{% endblock body%}

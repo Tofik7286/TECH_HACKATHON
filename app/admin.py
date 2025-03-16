@@ -1,9 +1,11 @@
 from django.contrib import admin
 from .models import *
 
+
 class AdminUser(admin.ModelAdmin):
-    list_display=("barcode", "asset_name", "asset_category", "asset_status")
+    list_display = ("barcode", "asset_name", "asset_category", "asset_status")
 # Register your models here.
+
 
 admin.site.register(Asset, AdminUser)
 admin.site.register(UserDetails)
