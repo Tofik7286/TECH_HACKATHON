@@ -21,7 +21,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('index/', views.index, name='index'),
     path('api/login/', views.login_view, name='login'),
     path('api/categories/', views.get_categories, name='get-categorys'),
     path('api/conditions/', views.get_condition_choices,
@@ -45,7 +45,7 @@ urlpatterns = [
     path('api/requests/', views.get_requests, name='get_requests'),
 
 
-    path('signin', views.signin, name='signin'),
+    path('', views.signin, name='signin'),
     path('logout', views.logout, name='logout'),
 
 
@@ -58,7 +58,7 @@ urlpatterns = [
     path('categorylist', views.categorylist, name='categorylist'),
     path('addcategory', views.addcategory, name='addcategory'),
     path('subcategorylist', views.subcategorylist, name='subcategorylist'),
-    path('addsubcategory', views.addsubcategory, name='addsubcategory'),
+    path('addsubcategory/', views.addsubcategory, name='addsubcategory'),
     path('editcategory', views.editcategory, name='editcategory'),
     path('editsubcategory', views.editsubcategory, name='editsubcategory'),
 
@@ -132,7 +132,26 @@ urlpatterns = [
 
 
     # delete products
-    path('deleteproduct/<int:id>', views.deleteproduct, name='deleteproduct'),
+    path('deleteproduct/<int:asset_id>',
+         views.deleteproduct, name='deleteproduct'),
+    path('deletecategory/<int:category_id>',
+         views.deletecategory, name='deletecategory'),
+
+    path('deletesubcategory/<int:sub_category_id>',
+         views.deletesubcategory, name='deletesubcategory'),
+
+    path('deleteuser/<int:user_id>', views.deleteuser, name='deleteuser'),
+
+    path('stock-prediction-page/', views.stock_prediction_page,
+         name='stock_prediction_page'),
+    path('stock-history-prediction/<int:asset_id>/',
+         views.stock_history_and_prediction, name='stock_history_and_prediction'),
+    path('export-stock-excel/<int:asset_id>/',
+         views.export_stock_to_excel, name='export_stock_to_excel'),
+    path('export-stock-pdf/<int:asset_id>/',
+         views.export_stock_to_pdf, name='export_stock_to_pdf'),
+    path('get-gemini-response/', views.get_gemini_response,
+         name='get_gemini_response'),
 ]
 
 if settings.DEBUG:

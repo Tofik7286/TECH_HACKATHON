@@ -1,0 +1,186 @@
+{% extends 'navbar.html' %}
+{% load static %}
+
+{% block title %} Stock Prediction {% endblock title %}
+
+{% block body %}
+<div class="main-wrapper">
+    <div class="page-wrapper">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-title">
+                    <h4>Stock Prediction</h4>
+                    <h6>Forecast stock levels for the next 6 months</h6>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    
+                    <div class="container text-center">
+                        <h1 class="mb-3 text-primary">📊 Stock Prediction for Next 6 Months</h1>
+
+                        <!-- ✅ Asset Selection Dropdown -->
+                        <label for="asset_id" class="fw-bold">Select Asset:</label>
+                        <select name="asset_id" id="asset_id" class="form-control d-inline-block w-auto border-primary">
+                            <option value="">-- Select Asset --</option>
+                            {% for asset in assets %}
+                            <option value="{{ asset.asset_id }}">{{ asset.asset_name }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <!-- ✅ Low Stock Warning -->
+                        <div id="low_stock_alert" class="mt-2"></div>
+                        
+                        <!-- ✅ Chart.js for Stock Prediction -->
+                        <canvas id="stockChart" class="mt-4 border border-primary rounded" style="max-width: 100%; height: 350px;"></canvas>
+                    </div>
+
+                    <!-- ✅ Table for Monthly Predicted Stock Levels -->
+                    <div class="table-responsive mt-4">
+                        <h2 class="text-center text-primary">📅 Predicted Stock Levels (Monthly)</h2>
+                        <table class="table table-bordered">
+                            <thead class="bg-primary text-white">
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Predicted Stock Level</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prediction_table">
+                                <tr><td colspan="2" class="text-center">Select an asset to see predictions</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ✅ Export Buttons -->
+                    <div class="text-center mt-4">
+                        <button id="export_excel" class="btn btn-success me-2">📊 Export to Excel</button>
+                        <button id="export_pdf" class="btn btn-danger">📄 Export to PDF</button>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ✅ Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- ✅ jQuery for AJAX -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    $("#asset_id").change(function () {
+        var assetId = $(this).val();
+        
+        if (!assetId) {
+            $("#stockChart").hide();
+            $("#prediction_table").html('<tr><td colspan="2" class="text-center">Select an asset to see predictions</td></tr>');
+            $("#low_stock_alert").html("");
+            return;
+        }
+
+        $.ajax({
+            url: "/stock-history-prediction/" + assetId + "/",
+            type: "GET",
+            dataType: "json",
+            beforeSend: function() {
+                $("#low_stock_alert").html("");  // Clear low stock warning
+                $("#prediction_table").html('<tr><td colspan="2" class="text-center">Loading...</td></tr>');  // Show loading message
+                $("#stockChart").hide();
+            },
+            success: function (response) {
+                if (response.error) {
+                    $("#prediction_table").html('<tr><td colspan="2" class="text-center text-danger">' + response.error + '</td></tr>');
+                    return;
+                }
+
+                console.log(response); // Debugging
+
+                // ✅ Prepare Data for Chart
+                const labels = response.past_stock.map(item => item.date);
+                const stockLevels = response.past_stock.map(item => item.stock_level);
+                const predictedLabels = response.predicted_stock.map(item => item.date);
+                const predictedStockLevels = response.predicted_stock.map(item => item.stock_level);
+
+                // ✅ Display Low Stock Warning
+                let lowStockDates = predictedStockLevels.filter(level => level < 50);
+                if (lowStockDates.length > 0) {
+                    $("#low_stock_alert").html('<div class="alert alert-danger">⚠ Warning: Low stock expected in upcoming months!</div>');
+                }
+
+                // ✅ Update Table
+                let tableHTML = "";
+                response.predicted_stock.forEach(function (item) {
+                    let rowClass = item.stock_level < 50 ? "table-danger" : "table-light";
+                    tableHTML += <tr class="${rowClass}"><td>${item.date}</td><td>${item.stock_level.toFixed(2)}</td></tr>;
+                });
+                $("#prediction_table").html(tableHTML);
+
+                // ✅ Generate Chart
+                $("#stockChart").show();
+                let ctx = document.getElementById("stockChart").getContext("2d");
+                new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: [...labels, ...predictedLabels],
+                        datasets: [
+                            {
+                                label: "Past Stock",
+                                data: stockLevels,
+                                borderColor: "blue",
+                                backgroundColor: "rgba(0, 0, 255, 0.1)",
+                                fill: true
+                            },
+                            {
+                                label: "Predicted Stock",
+                                data: [...new Array(stockLevels.length).fill(null), ...predictedStockLevels],
+                                borderColor: "green",
+                                backgroundColor: "rgba(0, 255, 0, 0.1)",
+                                borderDash: [5, 5],
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: { title: { display: true, text: "Date" }},
+                            y: { title: { display: true, text: "Stock Level" }}
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+    // ✅ Auto-load for first asset (if exists)
+    $("#asset_id").trigger("change");
+
+    // ✅ Export to Excel
+    $("#export_excel").click(function () {
+        var assetId = $("#asset_id").val();
+        if (!assetId) {
+            alert("Please select an asset first!");
+            return;
+        }
+        window.location.href = "/export-stock-excel/" + assetId + "/";
+    });
+
+    // ✅ Export to PDF
+    $("#export_pdf").click(function () {
+        var assetId = $("#asset_id").val();
+        if (!assetId) {
+            alert("Please select an asset first!");
+            return;
+        }
+        window.location.href = "/export-stock-pdf/" + assetId + "/";
+    });
+
+});
+</script>
+
+{% endblock %}

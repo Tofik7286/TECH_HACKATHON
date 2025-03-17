@@ -17,8 +17,14 @@
     <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
 
     <link rel="stylesheet" href="{% static 'assets/css/animate.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/chatbot.css' %}">
 
     <link rel="stylesheet" href="{% static 'assets/css/dataTables.bootstrap4.min.css' %}">
+    <head>
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    </head>
+    
 
     <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/fontawesome.min.css' %}">
     <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}">
@@ -192,7 +198,7 @@
                                 <i class="fa-solid fa-user"></i>
                                 <span class="status online"></span></span>
                             <div class="profilesets">
-                                <h6>Madhya Pradesh Police</h6>
+                                <h6>Tofik   </h6>
                                 <h5>Admin</h5>
                             </div>
                         </div>
@@ -220,10 +226,10 @@
             <div class="dropdown-menu dropdown-menu-right">
                 <a class="dropdown-item" href="{% url 'profile' %}">My Profile</a>
                 <a class="dropdown-item" href="generalsettings.html">Settings</a>
-                <a class="dropdown-item" href="signin.html">Logout</a>
+                <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                 <!-- <a class="dropdown-item" href="{% url 'profile' %}">My Profile</a> -->
                 <a class="dropdown-item" href="{% url 'generalSettings' %}">Settings</a>
-                <a class="dropdown-item" href="{% url 'signin' %}">Logout</a>
+                <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
             </div>
         </div>
 
@@ -268,12 +274,13 @@
                    
                     <li class="submenu">
                         <a href="javascript:void(0);"><img src="{% static 'assets/img/icons/expense1.svg' %}"
-                                alt="img"><span> Expense & Budget</span> <span class="menu-arrow"></span></a>
+                                alt="img"><span>Tender & Expense</span> <span class="menu-arrow"></span></a>
                         <ul>
-                            <li><a href="{% url 'quotationList' %}">Quotation List</a></li>
-                            <li><a href="{% url 'addquotation' %}">Add Quotation</a></li>
+                            <li><a href="{% url 'quotationList' %}">Tender List</a></li>
+                            <li><a href="{% url 'addquotation' %}">Add Tender</a></li>
                             <li><a href="{% url 'expenseList' %}">Expense List</a></li>
                             <li><a href="{% url 'createExpense' %}">Add Expense</a></li>
+                            <li><a href="{% url 'stock_prediction_page' %}">Stock Predictions</a></li>
 
                         </ul>
                     </li>
@@ -307,6 +314,19 @@
             </div>
         </div>
     </div>
+    <div id="chat-container">
+        <div id="chat-header">
+            <h1>Product Info Chatbot</h1>
+        </div>
+        <input type="text" id="chat-input" placeholder="Enter product name..." onkeypress="handleKeyPress(event)">
+        <div id="result-container"></div>
+        <select id="source-select">
+            <option value="database">Database</option>
+            <option value="world">World Data</option>
+        </select>
+        <button onclick="sendMessage()">Search</button>
+    </div>
+    <button id="chatbot-icon" onclick="toggleChat()">💬</button>
 
     {% block body %}{% endblock %}
 
@@ -330,6 +350,79 @@
     <script src="{% static 'assets/plugins/select2/js/select2.min.js' %}"></script>
     <script src="{% static 'assets/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
     <script src="{% static 'assets/plugins/sweetalert/sweetalerts.min.js' %}"></script>
+    <script>
+        function toggleChat() {
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.style.display = chatContainer.style.display === 'none' ? 'flex' : 'none';
+        }
+        function sendMessage() {
+            const productName = document.getElementById('chat-input').value.trim();
+            const source = document.getElementById('source-select').value;
+            const resultContainer = document.getElementById('result-container');
+            if (!productName) return;
+            resultContainer.innerHTML = "<p>Loading...</p>";
+            fetch('/get-gemini-response/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: `product_name=${encodeURIComponent(productName)}&source=${source}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        resultContainer.innerHTML = `<p class="not-found">${data.error}</p>`;
+                        return;
+                    }
+                    if (data.not_found && source === "database") {
+                        // Only show "Product not found" when searching in the database
+                        resultContainer.innerHTML = `
+            <p class="not-found">No product found. Would you like to search the web?</p>
+            <p class="search-again"><a href="https://www.google.com/search?q=${encodeURIComponent(productName)}" target="_blank">Search Google</a></p>
+        `;
+                        return;
+                    }
+                    if (data.products && data.products.length > 0) {
+                        const products = data.products;
+                        resultContainer.innerHTML = `
+            <table>
+                <tr><th>Name</th><th>Price</th><th>Details</th></tr>
+                ${products.map(product => `
+                <tr>
+                    <td>${product.name}</td>
+                    <td>${product.price}</td>
+                    <td>${product.details}</td>
+                </tr>
+                `).join('')}
+            </table>
+        `;
+                    } else {
+                        resultContainer.innerHTML = `<p>${data.reply}</p>`; // AI-generated response
+                    }
+                })
+                .catch(error => {
+                    resultContainer.innerHTML = `<p class="not-found">Error: ${error.message}</p>`;
+                });
+        }
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        }
+        function getCSRFToken() {
+            let cookieValue = null;
+            if (document.cookie) {
+                document.cookie.split(';').forEach(cookie => {
+                    cookie = cookie.trim();
+                    if (cookie.startsWith("csrftoken=")) {
+                        cookieValue = decodeURIComponent(cookie.split('=')[1]);
+                    }
+                });
+            }
+            return cookieValue;
+        }
+    </script>
 </body>
 
 </html>

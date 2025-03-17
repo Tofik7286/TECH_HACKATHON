@@ -66,18 +66,16 @@
                                     <input type="date" id="maintenance_date" name="maintenance_date" readonly>
                                 </div>
                             </div>
+                           
                             <div class="col-lg-12">
                                 <button class="btn btn-submit me-2">Submit</button>
                                 <a href="{% url 'productlist' %}" class="btn btn-cancel">Cancel</a>
+                                <a href="/import_products_html/" class="btn btn-submit me-2">Import Products</a>
                             </div>
+                          
                         </div>
                     </form>
 
-                    <form method="POST" action="{% url 'import_products' %}" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <input type="file" name="file" accept=".csv, .xlsx">
-                        <button type="submit">Import Products</button>
-                    </form>
                    
                 </div>
             </div>

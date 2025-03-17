@@ -10,6 +10,39 @@
 <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
 <link rel="stylesheet" href="{% static 'assets/css/bootstrap-datetimepicker.min.css' %}">
 <link rel="stylesheet" href="{% static 'assets/plugins/select2/css/select2.min.css' %}">
+<style>
+    /* Add this CSS if you don't want to use an external CSS file */
+    .message {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .message.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .message.info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    .message.warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+</style>
 {% endblock css %}
 {% block body %}
 
@@ -20,22 +53,31 @@
         <div class="login-wrapper" style="justify-content: center;">
             <div class="login-content" style="box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.25);">
                 <div class="login-userset">
-                    <form action="{% url 'signin' %}" method="POST">
-                        {% csrf_token %}
-                    <center><div class="login-logo ">
-                      
-                        <img src="{% static 'assets/img/MP_LOGO.jpg' %}" alt="img"  style="width: 200px; height: auto;">
-                   
-                    </div> 
-                    <div class="login-userheading">
-                        <h3>Sign In</h3>
-                        <h4>Please login to your account</h4>
-                        {{e_msg}}
-                    </div></center>
+                    {% if messages %}
+                    <ul>
+                        {% for message in messages %}
+                            <li class="message {{ message.tags }}">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                
+                <form action="{% url 'signin' %}" method="POST">
+                    {% csrf_token %}
+                    
+                    <center>
+                        <div class="login-logo">
+                            <img src="{% static 'assets/img/MP_LOGO.jpg' %}" alt="img" style="width: 200px; height: auto;">
+                        </div> 
+                        <div class="login-userheading">
+                            <h3>Sign In</h3>
+                            <h4>Please login to your account</h4>
+                        </div>
+                    </center>
+            
                     <div class="form-login">
-                        <label>Email</label>
+                        <label>Username</label>
                         <div class="form-addons">
-                            <input type="text" placeholder="Enter your email address" name="email">
+                            <input type="text" placeholder="Enter your username" name="username">
                             <img src="{% static 'assets/img/icons/mail.svg' %}" alt="img">
                         </div>
                     </div>
@@ -52,12 +94,9 @@
                         </div>
                     </div>
                     <div class="form-login">
-                        <button type="submit" class="btn btn-login">SignIn</button>
+                        <button type="submit" class="btn btn-login">Sign In</button>
                     </div>
-                   
-                  
-                
-                </div></form>
+                </form>
             </div>
             <!-- <div class="login-img">
                 <img src="{% static 'assets/img/MP_LOGO.jpeg' %}" alt="img">

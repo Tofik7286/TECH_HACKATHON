@@ -108,7 +108,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for category in categories %}
+                                {% for i in catList %}
                                 <tr>
                                     <td>
                                         <label class="checkboxs">
@@ -117,15 +117,15 @@
                                         </label>
                                     </td>
                                     <td class="productimgname" style="vertical-align: top ;">
-                                        <a href="javascript:void(0);">{{category.category_name}}</a>
+                                        <a href="javascript:void(0);">{{i.category_name}}</a>
                                     </td>
-                                    <td>{{category.category_id}}</td>
+                                    <td>{{i.category_id}}</td>
                                     <td>Admin</td>
                                     <td>
                                         <a class="me-3" href="{% url 'editcategory' %}">
                                             <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
                                         </a>
-                                        <a class="me-3 confirm-text" href="javascript:void(0);">
+                                        <a class="me-3" href="/deletecategory/{{i.category_id}}">
                                             <img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
                                         </a>
                                     </td>

@@ -1,3 +1,4 @@
+from .models import AssetCategory, AssetSubCategory
 from datetime import datetime
 from django.shortcuts import render, redirect
 from datetime import timedelta
@@ -13,6 +14,7 @@ from rest_framework.decorators import api_view
 from rest_framework import status
 from django.contrib.auth import login as django_login
 from django.contrib.auth import login as django_login
+from django.contrib.auth.hashers import check_password
 from .serializers import ProductSerializer, LoginSerializer, AssignSerializer, AssetSerializer, UserSerializer, BarcodeUpdateSerializer, RequestAssetSerializer, SubcategorySerializer, AllocationSerializer
 from django.utils import timezone
 from datetime import datetime
@@ -27,6 +29,200 @@ from django.http import HttpResponse
 from django.core.files.storage import FileSystemStorage
 import pandas as pd
 from django.db import transaction
+from django.contrib.auth.models import User
+import pytz
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from datetime import timedelta
+import pandas as pd
+import numpy as np
+import logging
+from django.http import JsonResponse
+from django.shortcuts import render
+from statsmodels.tsa.arima.model import ARIMA
+from .models import StockHistory, Asset
+from openpyxl import Workbook
+from reportlab.pdfgen import canvas
+from datetime import datetime, timedelta
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from app.models import *
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import login as django_login
+from django.contrib.auth import login as django_login
+from .serializers import ProductSerializer, LoginSerializer, AssignSerializer, AssetSerializer, UserSerializer, BarcodeUpdateSerializer, RequestAssetSerializer, SubcategorySerializer, AllocationSerializer
+from django.utils import timezone
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.core.serializers.json import DjangoJSONEncoder
+from geopy.geocoders import Nominatim
+from django.db.models import Count
+import json
+from datetime import date
+from datetime import timedelta
+import pandas as pd
+import numpy as np
+import logging
+from django.http import JsonResponse
+from django.shortcuts import render
+from statsmodels.tsa.arima.model import ARIMA
+from .models import StockHistory, Asset
+from openpyxl import Workbook
+from reportlab.pdfgen import canvas
+import google.generativeai as genai
+from django.shortcuts import render
+from django.http import JsonResponse
+from dotenv import load_dotenv
+import os
+
+
+def export_stock_to_excel(request, asset_id):
+    try:
+        asset = Asset.objects.get(asset_id=asset_id)
+        stock_data = StockHistory.objects.filter(asset=asset).order_by('date')
+
+        if not stock_data.exists():
+            return JsonResponse({"error": "No stock history available"}, status=404)
+
+        df = pd.DataFrame.from_records(
+            stock_data.values('date', 'stock_level'))
+        df['date'] = pd.to_datetime(df['date'])
+        df.set_index('date', inplace=True)
+
+        if len(df) < 10:
+            return JsonResponse({"error": "Not enough stock history for prediction"}, status=404)
+
+        # 🔹 Train ARIMA model
+        model = ARIMA(df['stock_level'], order=(2, 1, 2))
+        model_fit = model.fit()
+        forecast = model_fit.forecast(steps=30)
+        forecast_dates = [df.index[-1] +
+                          timedelta(days=i) for i in range(1, 31)]
+
+        # 🔹 Prepare Data for Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = f"{asset.asset_name} Prediction"
+
+        # 🔹 Add Headers
+        ws.append(["Date", "Predicted Stock Level"])
+
+        # 🔹 Add Forecast Data
+        for date, stock in zip(forecast_dates, forecast):
+            ws.append([date.strftime('%Y-%m-%d'), int(np.round(stock))])
+
+        # 🔹 Create Response for Excel File
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = f'attachment; filename="Stock_Prediction_{asset.asset_name}.xlsx"'
+        wb.save(response)
+        return response
+
+    except Asset.DoesNotExist:
+        return JsonResponse({"error": "Asset not found"}, status=404)
+
+
+# 🔹 Export Stock Predictions to PDF
+def export_stock_to_pdf(request, asset_id):
+    try:
+        asset = Asset.objects.get(asset_id=asset_id)
+        stock_data = StockHistory.objects.filter(asset=asset).order_by('date')
+
+        if not stock_data.exists():
+            return JsonResponse({"error": "No stock history available"}, status=404)
+
+        df = pd.DataFrame.from_records(
+            stock_data.values('date', 'stock_level'))
+        df['date'] = pd.to_datetime(df['date'])
+        df.set_index('date', inplace=True)
+
+        if len(df) < 10:
+            return JsonResponse({"error": "Not enough stock history for prediction"}, status=404)
+
+        # 🔹 Train ARIMA model
+        model = ARIMA(df['stock_level'], order=(2, 1, 2))
+        model_fit = model.fit()
+        forecast = model_fit.forecast(steps=30)
+        forecast_dates = [df.index[-1] +
+                          timedelta(days=i) for i in range(1, 31)]
+
+        # 🔹 Create PDF Response
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="Stock_Prediction_{asset.asset_name}.pdf"'
+
+        p = canvas.Canvas(response)
+        p.setFont("Helvetica", 14)
+        p.drawString(
+            100, 800, f"Stock Prediction Report for {asset.asset_name}")
+
+        y_position = 780
+        p.setFont("Helvetica", 10)
+
+        # 🔹 Add Forecast Data
+        for date, stock in zip(forecast_dates, forecast):
+            y_position -= 20
+            p.drawString(
+                100, y_position, f"{date.strftime('%Y-%m-%d')} - {int(np.round(stock))}")
+
+        p.showPage()
+        p.save()
+        return response
+
+    except Asset.DoesNotExist:
+        return JsonResponse({"error": "Asset not found"}, status=404)
+
+
+def stock_prediction_page(request):
+    assets = Asset.objects.all()  # Fetch all assets
+    return render(request, 'stock_predictions.html', {'assets': assets})
+
+# 🔹 Function to Predict Stock Levels
+
+
+def stock_history_and_prediction(request, asset_id):
+    try:
+        asset = Asset.objects.get(asset_id=asset_id)
+        stock_data = StockHistory.objects.filter(asset=asset).order_by('date')
+
+        if not stock_data.exists():
+            return JsonResponse({"error": "No stock history available"}, status=404)
+
+        # Convert stock history to DataFrame
+        df = pd.DataFrame.from_records(
+            stock_data.values('date', 'stock_level'))
+        df['date'] = pd.to_datetime(df['date'])
+        df.set_index('date', inplace=True)
+
+        if len(df) < 10:
+            return JsonResponse({"error": "Not enough stock history for prediction"}, status=404)
+
+        # 🔹 Fit ARIMA model
+        try:
+            model = ARIMA(df['stock_level'], order=(2, 1, 2))
+            model_fit = model.fit()
+            forecast = model_fit.forecast(steps=30)
+            forecast_dates = [df.index[-1] +
+                              timedelta(days=i) for i in range(1, 31)]
+
+            # 🔹 Format data for JSON response
+            past_stock = [{"date": str(index.date()), "stock_level": row}
+                          for index, row in df['stock_level'].items()]
+            predicted_stock = [{"date": str(date.date()), "stock_level": int(
+                np.round(value))} for date, value in zip(forecast_dates, forecast)]
+
+            return JsonResponse({
+                "asset": asset.asset_name,
+                "past_stock": past_stock,
+                "predicted_stock": predicted_stock
+            })
+        except Exception as e:
+            return JsonResponse({"error": f"ARIMA model error: {str(e)}"}, status=500)
+    except Asset.DoesNotExist:
+        return JsonResponse({"error": "Asset not found"}, status=404)
 
 
 @api_view(['POST'])
@@ -366,41 +562,38 @@ def get_product_by_barcode(request, barcode):
 
 
 def signin(request):
-    if "email" in request.session:
+    if "username" in request.session:
         # Redirect to the appropriate page for logged-in users
         return redirect('index')
 
     if request.method == 'POST':
-        email = request.POST['email']
+        username = request.POST['username']
         password = request.POST['password']
         try:
-            # Fetch user by email
-            uid = UserDetails.objects.get(email=email)
-            print(email)
+            # Fetch user by username
+            user = User.objects.get(username=username)
             # Check password match
-            if uid.password == password:
+            if check_password(password, user.password):
                 # Set session only if the password is correct
-                request.session['email'] = uid.email
+                request.session['username'] = user.username
                 # Redirect to the dashboard or homepage
-                return redirect("index")
+                return redirect('index')
             else:
                 # Invalid password
-                con = {"e_msg": "Invalid password"}
-                return render(request, "signin.html", con)
-        except UserDetails.DoesNotExist:
+                messages.error(request, 'Invalid password')
+                return render(request, 'signin.html')
+        except User.DoesNotExist:
             # User does not exist
-            con = {'e_msg': 'User does not exist'}
-            return render(request, 'signin.html', con)
+            messages.error(request, 'User does not exist')
+            return render(request, 'signin.html')
 
     return render(request, 'signin.html')
 
 
 def logout(request):
-    if 'email' in request.session:
-        del request.session['email']
-        return redirect('signin')
-    else:
-        return redirect('signin')
+    if "username" in request.session:
+        del request.session['username']
+    return redirect('signin')  # Redirect to the signin page after logout
 
 
 def forgetpassword(request):
@@ -543,19 +736,67 @@ def addproduct(request):
 def categorylist(request):
     catList = AssetCategory.objects.all()
     print(catList)
-    return render(request, 'categorylist.html')
+    return render(request, 'categorylist.html', context={'catList': catList})
 
 
 def addcategory(request):
-    return render(request, 'addcategory.html')
+    if request.method == 'POST':
+        category_name = request.POST.get('category_name')
+        AssetCategory.objects.create(category_name=category_name)
+        return redirect('categorylist')
+    else:
+        return render(request, 'addcategory.html')
 
 
 def subcategorylist(request):
+    subcatList = AssetSubCategory.objects.all()
+    print(subcatList)
+    return render(request, 'subcategorylist.html', context={'subcategories': subcatList})
     return render(request, 'subcategorylist.html')
 
 
 def addsubcategory(request):
-    return render(request, 'subaddcategory.html')
+    if request.method == 'POST':
+        sub_category_name = request.POST.get('sub_category_name')
+        category_id = request.POST.get('category_id')
+
+        # Debugging: Print the received values
+        print("Subcategory Name:", sub_category_name)
+        print("Category ID:", category_id)
+
+        # Ensure category_id is not empty
+        if category_id:
+            try:
+                # Get the category object using category_id
+                category = AssetCategory.objects.get(category_id=category_id)
+
+                # Create the subcategory object
+                subcategory = AssetSubCategory.objects.create(
+                    sub_category_name=sub_category_name,
+                    category=category
+                )
+
+                # Debugging: Check if subcategory was created successfully
+                print(f"Subcategory created: {subcategory.sub_category_name}")
+
+                return redirect('subcategorylist')
+
+            except AssetCategory.DoesNotExist:
+                # Handle category not found
+                return render(request, 'subaddcategory.html', {
+                    'categories': AssetCategory.objects.all(),
+                    'error_message': "Selected category does not exist."
+                })
+
+        else:
+            # Handle empty category_id
+            return render(request, 'subaddcategory.html', {
+                'categories': AssetCategory.objects.all(),
+                'error_message': "Please select a category.",
+            })
+    else:
+        categories = AssetCategory.objects.all()
+        return render(request, 'subaddcategory.html', {'categories': categories})
 
 
 def editcategory(request):
@@ -719,10 +960,12 @@ def aa(request):
 def newuser(request):
     if request.method == 'POST':
         # Get data from the POST request
-        username = request.POST.get('username')
-        role_name = request.POST.get('role_name')
+        firstname = request.POST.get('firstname')
+        lastname = request.POST.get('lastname')
         email = request.POST.get('email')
         password = request.POST.get('password')
+        role_name = request.POST.get('role_name')
+        username = request.POST.get('username')
         station_name = request.POST.get('station_name')
         mobile = request.POST.get('mobile')
         print(username)
@@ -733,16 +976,19 @@ def newuser(request):
         station = stationDetails.objects.get(station_name=station_name)
 
         UserDetails.objects.create(
-            username=username,
-            role=roleGet,
+            first_name=firstname,
+            last_name=lastname,
             email=email,
             password=password,
+            role=roleGet,
+            username=username,
             station=station,
             contact_number=mobile,
-            full_name="amaan shaikh"
+
         )
 
-        return redirect('newuser')
+        # return redirect('newuser')
+        return HttpResponse("User created successfully!")
 
     roles = role.objects.all()
     station = stationDetails.objects.all()
@@ -778,6 +1024,36 @@ def expenseCategory(request):
 def quotationList(request):
     return render(request, 'quotationList.html')
 
+
+# def addquotation(request):
+#     if request.method == 'POST':
+#         try:
+#             item = request.POST.get('item')
+#             quantity = request.POST.get('quantity')
+#             startdate = request.POST.get('startdate')
+#             enddate = request.POST.get('enddate')
+
+#             # Check if all fields are present
+#             if not all([item, quantity, startdate, enddate]):
+#                 return JsonResponse({'success': False, 'message': 'All fields are required!'}, status=400)
+
+#             # Validate the data (optional but recommended)
+#             if not quantity.isdigit():
+#                 return JsonResponse({'success': False, 'message': 'Quantity must be a valid number!'}, status=400)
+
+#             # Create the Tender object
+#             Tender.objects.create(
+#                 itemName=item,
+#                 quantity=int(quantity),
+#                 startDate=startdate,
+#                 endDate=enddate
+#             )
+
+#             return JsonResponse({'success': True, 'message': 'You have successfully applied!'}, status=200)
+#         except Exception as e:
+#             return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+#     return render(request, 'addquotation.html')
 
 def addquotation(request):
     return render(request, 'addquotation.html')
@@ -834,7 +1110,18 @@ def editExpense(request):
 
 
 def profile(request):
-    return render(request, 'profile.html')
+    if request.user.is_authenticated:
+        user = request.user
+        context = {
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            # Add other user details as needed
+        }
+        return render(request, 'profile.html', context)
+    else:
+        return redirect('signin')
 
 
 def generalSettings(request):
@@ -864,11 +1151,11 @@ def assign_product(request):
         location_name = geolocator.reverse(
             (latitude, longitude)).raw['address']
         print(location_name)
-        road_name = location_name.get('road')
-        city_name = location_name.get('state_district')
-        district_name = location_name.get('city_district')
-        specific_area_name = road_name + ', ' + city_name + ', ' + district_name
-        print(specific_area_name)
+        # road_name = location_name.get('road')
+        # city_name = location_name.get('state_district')
+        # district_name = location_name.get('city_district')
+        # specific_area_name = road_name + ', ' + city_name + ', ' + district_name
+        # print(specific_area_name)
 
         try:
             # Fetch the asset from the database
@@ -881,7 +1168,7 @@ def assign_product(request):
                     asset=asset,
                     user=user,
                     expected_return_date=returnDate,
-                    assign_location=specific_area_name
+                    # assign_location=specific_area_name
                 )
 
                 asset.assign_to = user
@@ -906,20 +1193,23 @@ def import_products_html(req):
 
 @csrf_exempt
 def import_products(request):
-    if request.method == 'POST' and request.FILES['file']:
+    if request.method == 'POST' and request.FILES.get('file'):
         file = request.FILES['file']
+
+        # Check for valid file types (CSV or Excel)
         if not (file.name.endswith('.csv') or file.name.endswith('.xlsx')):
             return HttpResponse('Invalid file type. Please upload a CSV or Excel file.', status=400)
 
         try:
+            # Read the file into a pandas DataFrame
             if file.name.endswith('.csv'):
                 df = pd.read_csv(file)
-            elif file.name.endswith('.xlsx'):
+            else:
                 df = pd.read_excel(file)
         except Exception as e:
-            print(f'Error reading file: {e}')
             return HttpResponse(f'Error reading file: {e}', status=400)
 
+        # Function to parse and validate date
         def parse_date(date_value):
             try:
                 if pd.isna(date_value):
@@ -933,16 +1223,15 @@ def import_products(request):
         try:
             with transaction.atomic():
                 for index, row in df.iterrows():
-                    # Print the contents of each row for debugging
-                    print(f'Row {index}: {row}')
                     asset_name = row.get('asset_name')
                     barcode = row.get('barcode')
-                    # category_name = row.get('category_name')
+                    category_name = row.get('category_name')
                     sub_category_name = row.get('sub_category_name')
                     purchase_date = parse_date(row.get('purchase_date'))
                     asset_value = row.get('asset_value')
                     condition = row.get('condition')
 
+                    # Validate required fields
                     if not all([asset_name, barcode, asset_value, condition]):
                         print(f'Missing required fields in row {index}')
                         continue
@@ -951,31 +1240,34 @@ def import_products(request):
                         print(f'Invalid date format in row {index}')
                         continue
 
-                    # Ensure the sub_category and category are saved before creating the asset
-                    # category, created = AssetCategory.objects.get_or_create(
-                    #     category_name=category_name)
-                    # sub_category, created = AssetSubCategory.objects.get_or_create(
-                    #     sub_category_name=sub_category_name,
-                    #     defaults={'category': category}
-                    # )
+                    # Get or create the category
+                    category, _ = AssetCategory.objects.get_or_create(
+                        category_name=category_name)
 
-                    print(f'Creating asset: {asset_name}')
+                    # Get or create the sub-category, linking it to the category
+                    sub_category, _ = AssetSubCategory.objects.get_or_create(
+                        sub_category_name=sub_category_name,
+                        defaults={'category': category}
+                    )
+
+                    # Create the Asset object
                     Asset.objects.create(
                         asset_name=asset_name,
                         barcode=barcode,
-                        asset_category=sub_category_name,
+                        asset_category=sub_category,  # ✅ Correct foreign key reference
                         purchase_date=purchase_date,
                         asset_value=asset_value,
                         condition=condition,
+                        location="",  # Set a default or get from CSV if available
+                        assign_to=None,  # Handle if user assignment is included in the CSV
+                        asset_status="available",  # Default status if not in CSV
                     )
 
-            print('Products imported successfully')
-            return HttpResponse('Products imported successfully')
-        except Exception as e:
-            print(f'Error saving products: {e}')
-            return HttpResponse(f'Error saving products: {e}', status=500)
+            return redirect('productlist')
 
-    print('Invalid request')
+        except Exception as e:
+            return HttpResponse(f'Error saving assets: {e}', status=500)
+
     return HttpResponse('Invalid request. Please upload a CSV or Excel file.', status=400)
 
 
@@ -985,23 +1277,148 @@ def export_products(request):
     response['Content-Disposition'] = 'attachment; filename="products.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['asset_name', 'barcode', 'category_name',
-                    'purchase_date', 'asset_value', 'condition'])
+    # Updated headers to include sub_category_name
+    writer.writerow(['asset_name', 'barcode', 'category_name', 'sub_category_name',
+                     'purchase_date', 'asset_value', 'condition'])
+
     for asset in assets:
         writer.writerow([
             asset.asset_name,
             asset.barcode,
             asset.asset_category.category.category_name if asset.asset_category and asset.asset_category.category else '',
-            asset.purchase_date,
+            asset.asset_category.sub_category_name if asset.asset_category else '',
+            asset.purchase_date.strftime(
+                '%Y-%m-%d') if asset.purchase_date else '',
             asset.asset_value,
             asset.condition,
         ])
 
     return response
-
-
 # delete products
-def deleteproduct(request, id):
-    asset = Asset.objects.get(id=id)
-    asset.delete()
+
+
+def deleteproduct(request, asset_id):
+    product = Asset.objects.get(asset_id=asset_id)
+    product.delete()
     return redirect('productlist')
+
+
+# deletecategory
+def deletecategory(request, category_id):
+    category = AssetCategory.objects.get(category_id=category_id)
+    category.delete()
+    return redirect('categorylist')
+
+
+def deletesubcategory(request, sub_category_id):
+    category = AssetSubCategory.objects.get(sub_category_id=sub_category_id)
+    category.delete()
+    return redirect('subcategorylist')
+
+
+def deleteuser(request, user_id):
+    user = UserDetails.objects.get(user_id=user_id)
+    user.delete()
+    return redirect('userlists')
+
+
+def export_stock_to_excel(request, asset_id):
+    try:
+        asset = Asset.objects.get(asset_id=asset_id)
+        stock_data = StockHistory.objects.filter(asset=asset).order_by('date')
+
+        if not stock_data.exists():
+            return JsonResponse({"error": "No stock history available"}, status=404)
+
+        df = pd.DataFrame.from_records(
+            stock_data.values('date', 'stock_level'))
+        df['date'] = pd.to_datetime(df['date'])
+        df.set_index('date', inplace=True)
+
+        if len(df) < 10:
+            return JsonResponse({"error": "Not enough stock history for prediction"}, status=404)
+
+        # 🔹 Train ARIMA model
+        model = ARIMA(df['stock_level'], order=(2, 1, 2))
+        model_fit = model.fit()
+        forecast = model_fit.forecast(steps=30)
+        forecast_dates = [df.index[-1] +
+                          timedelta(days=i) for i in range(1, 31)]
+
+        # 🔹 Prepare Data for Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = f"{asset.asset_name} Prediction"
+
+        # 🔹 Add Headers
+        ws.append(["Date", "Predicted Stock Level"])
+
+        # 🔹 Add Forecast Data
+        for date, stock in zip(forecast_dates, forecast):
+            ws.append([date.strftime('%Y-%m-%d'), int(np.round(stock))])
+
+        # 🔹 Create Response for Excel File
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = f'attachment; filename="Stock_Prediction_{asset.asset_name}.xlsx"'
+        wb.save(response)
+        return response
+
+    except Asset.DoesNotExist:
+        return JsonResponse({"error": "Asset not found"}, status=404)
+
+
+# Load API key
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+
+def home(request):
+    return render(request, 'chatbot_app/index.html')
+
+
+def get_gemini_response(request):
+    if request.method == 'POST':
+        product_name = request.POST.get('product_name')
+        source = request.POST.get('source')  # Get source selection
+
+        product_data = []
+
+        # If user selects "Database", fetch from database
+        if source == "database":
+            try:
+                # Use the correct field name 'asset_name'
+                products = Asset.objects.filter(
+                    asset_name__icontains=product_name)
+                if products.exists():
+                    for product in products:
+                        product_data.append({
+                            "name": product.asset_name,  # Use the correct field here too
+                            # Assuming you want asset_value as price
+                            "price": str(product.asset_value),
+                            # You can adjust the details as needed
+                            "details": product.asset_category.sub_category_name if product.asset_category else "No details"
+                        })
+                else:
+                    product_data = None
+            except Exception as e:
+                return JsonResponse({'error': f"Database Error: {str(e)}"})
+
+        # If user selects "World Data", fetch from Gemini
+        if not product_data and source == "world":
+            try:
+                model = genai.GenerativeModel('gemini-1.5-pro-latest')
+                response = model.generate_content(
+                    f"Give me world knowledge about: {product_name}")
+                reply = response.text.strip() if hasattr(
+                    response, 'text') else "No valid response from Gemini."
+                return JsonResponse({'not_found': True, 'reply': reply})
+            except Exception as e:
+                return JsonResponse({'error': f"Error: {str(e)}"})
+
+        if not product_data:
+            return JsonResponse({'not_found': True, 'reply': 'No product found.'})
+
+        return JsonResponse({'not_found': False, 'products': product_data})
+
+    return JsonResponse({'error': "Invalid request."})

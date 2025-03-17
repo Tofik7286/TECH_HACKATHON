@@ -49,7 +49,9 @@
                         
 
                         
-                                    <a href="{% url "export_products" %}">Export</a>
+                                <a href="{% url 'export_products' %}" class="btn btn-primary me-2">
+                                    <i class="fas fa-download"></i> Export
+                                </a>
                                 {% comment %} export products {% endcomment %}
                                  
 
@@ -145,7 +147,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for asset in asset %}
+                                {% for i in asset %}
                                 <tr>
                                     <td>
                                         <label class="checkboxs">
@@ -157,55 +159,55 @@
                                         <a href="javascript:void(0);" class="product-img">
                                             <img src="{% static 'assets/img/product/product6.jpg' %}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">{{ asset.asset_name }}</a>
+                                        <a href="javascript:void(0);">{{ i.i_name }}</a>
                                     </td>
-                                    <td> {% if asset.barcode %}
-                                        {{ asset.barcode }}
+                                    <td> {% if i.barcode %}
+                                        {{ i.barcode }}
                                         {% else %}
                                         <span class="text-danger">ADD BARCODE!</span>
                                         {% endif %}
                                     </td>
                                     <td> 
-                                        {{ asset.asset_category.category }}
+                                        {{ i.asset_category.category }}
                                         </td>
-                                    <td> {% if asset.asset_category and asset.asset_category.category %}
-                                        {{ asset.asset_category }}
+                                    <td> {% if i.asset_category and i.asset_category.category %}
+                                        {{ i.asset_category }}
                                         {% else %}
                                         No Category
                                         {% endif %}
                                     </td>
-                                    <td>{% if asset.asset_status == 'available' %}
+                                    <td>{% if i.asset_status == 'available' %}
                                         <span class="badges bg-lightgreen">Available</span>
-                                        {% elif asset.asset_status == 'in-use' %}
+                                        {% elif i.asset_status == 'in-use' %}
                                         <span class="badges bg-lightyellow">In-Use</span>
-                                        {% elif asset.asset_status == 'in-maintenance' %}
+                                        {% elif i.asset_status == 'in-maintenance' %}
                                         <span  class="badges bg" style="background-color: rgb(108, 108, 193);">In-Maintenance</span>
-                                        {% elif asset.asset_status == 'expired' %}
+                                        {% elif i.asset_status == 'expired' %}
                                         <span class="badges bg-lightred">Expired</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ asset.asset_value }}</td>
-                                    <td> {% if asset.condition == 'good' %}
+                                    <td>{{ i.asset_value }}</td>
+                                    <td> {% if i.condition == 'good' %}
                                         <span class="badges bg-lightgreen">Good</span>
-                                        {% elif asset.condition == 'average' %}
+                                        {% elif i.condition == 'average' %}
                                         <span class="badges bg-lightyellow">Average</span>
-                                        {% elif asset.condition == 'belowaverage' %}
+                                        {% elif i.condition == 'belowaverage' %}
                                         <span class="badges bg-lightred">BelowAverage</span>
                                         {% endif %}
                                     </td>
-                                    <td> {% if asset.asset_maintenance_date %}
-                                        {{ asset.asset_maintenance_date|date:"d M Y" }}
+                                    <td> {% if i.asset_maintenance_date %}
+                                        {{ i.asset_maintenance_date|date:"d M Y" }}
                                         {% else %}
                                         N/A
                                         {% endif %}</td>
                                     <td>
-                                        <a class="me-3" href="{% url 'productdetails' asset.asset_id  %}">
+                                        <a class="me-3" href="{% url 'productdetails' i.asset_id  %}">
                                             <img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
                                         </a>
-                                        <a class="me-3" href="{% url 'editproduct' asset.asset_id %}">
+                                        <a class="me-3" href="{% url 'editproduct' i.asset_id %}">
                                             <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
                                         </a>
-                                        <a class="me-3 confirm-text" href="{% url 'deleteproduct' id=id %}">
+                                        <a class="me-3" href="/deleteproduct/{{i.asset_id}}">
                                             <img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
                                         </a>
                                     </td>

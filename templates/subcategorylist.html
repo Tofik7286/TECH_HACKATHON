@@ -114,7 +114,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for subcategory in subcategories %}
+                                {% for i in subcategories %}
 
                                 <tr>
                                     <td>
@@ -128,15 +128,16 @@
                                             <img src="{% static 'assets/img/product/product1.jpg' %}" alt="product">
                                         </a>
                                     </td>
-                                    <td>{{subcategory.sub_category_name}}</td>
-                                    <td>{{subcategory.category.category_name}}</td>
-                                    <td>{{subcategory.sub_category_id}}</td>
+                                    <td>{{i.sub_category_name}}</td>
+                                    <td>{{i.category.category_name}}</td>
+                                    <td>{{i.sub_category_id}}</td>
                                     <td>Admin</td>
                                     <td>
                                         <a class="me-3" href="{% url 'editsubcategory' %}">
                                             <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
                                         </a>
-                                        <a class="me-3 confirm-text" href="javascript:void(0);">
+                                        <a class="me-3" href="/deletesubcategory/{{i.sub_category_id}}">
+                
                                             <img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
                                         </a>
                                     </td>

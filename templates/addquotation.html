@@ -1,6 +1,7 @@
 {% extends 'navbar.html' %}
+
 {% load static %}
-{% block title %} index {% endblock title %}
+{% block title %} Index {% endblock title %}
 {% block css %}
 {% endblock css %}
 {% block body %}
@@ -8,186 +9,80 @@
 <div class="main-wrapper">
     <div class="page-wrapper">
         <div class="content">
+
             <div class="page-header">
                 <div class="page-title">
-                    <h4>Quotation Edit</h4>
-                    <h6>Add/Update Quotation</h6>
+                    <h4>GeM Certified Tender Creation</h4>
+                    <h6>Create new Tender</h6>
                 </div>
             </div>
             <div class="card">
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-lg-3 col-sm-6 col-12">
-                            <div class="form-group">
-                                <label>Seller Name</label>
-                                <div class="row">
-                                    <div class="col-lg-10 col-sm-10 col-10">
-                                        <select class="select">
-                                            <option>Tata Groups</option>
-                                            <option>Customer</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-lg-2 col-sm-2 col-2 ps-0">
-                                        <div class="add-icon">
-                                            <a href="javascript:void(0);"><img src="{% static 'assets/img/icons/plus1.svg' %}"
-                                                    alt="img"></a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <form action="https://bidplus.gem.gov.in/all-bids" method="post" id="quotationForm">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Bid No</label>
+                            <input type="text" name="bidno" required>
                         </div>
-                        <div class="col-lg-3 col-sm-6 col-12">
-                            <div class="form-group">
-                                <label>Quotation Date </label>
-                                <div class="input-groupicon">
-                                    <input type="text" class="datetimepicker" value="11/27/2024">
-                                    <div class="addonset">
-                                        <img src="{% static 'assets/img/icons/calendars.svg' %}" alt="img">
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            <label>Item Name</label>
+                            <input type="text" name="item" required>
                         </div>
-                        <div class="col-lg-3 col-sm-6 col-12">
-                            <div class="form-group">
-                                <label>Reference No.</label>
-                                <input type="text" value="555444">
-                            </div>
+                        <div class="form-group">
+                            <label>Quantity</label>
+                            <input type="text" name="quantity" required>
                         </div>
-                        <div class="col-lg-12 col-sm-6 col-12">
-                            <div class="form-group">
-                                <label>Product Name</label>
-                                <div class="input-groupicon">
-                                    <input type="text" placeholder="Scan/Search Product by code and select...">
-                                    <div class="addonset">
-                                        <img src="{% static 'assets/img/icons/scanners.svg' %}" alt="img">
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            <label>Start Date</label>
+                            <input type="date" name="startdate" id="start_date" required>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Net Unit Price(INR) </th>
-                                        <th>Stock</th>
-                                        <th>Qty</th>
-                                        <th>Discount(INR) </th>
-                                        <th>Tax % </th>
-                                        <th class="text-end">Subtotal (INR)</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="productimgname">
-                                            <a class="product-img">
-                                                <img src="{% static 'assets/img/product/product6.jpg' %}" alt="product">
-                                            </a>
-                                            <a href="javascript:void(0);">Apple Macbook</a>
-                                        </td>
-                                        <td>150000</td>
-                                        <td>50</td>
-                                        <td>50</td>
-                                        <td>0</td>
-                                        <td>10</td>
-                                        <td class="text-end">7500000</td>
-                                        <td>
-                                            <a href="javascript:void(0);" class="delete-set"><img
-                                                    src="{% static 'assets/img/icons/delete.svg' %}" alt="svg"></a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="productimgname">
-                                            <a class="product-img">
-                                                <img src="{% static 'assets/img/product/product7.jpg' %}" alt="product">
-                                            </a>
-                                            <a href="javascript:void(0);">Apple Mac mini</a>
-                                        </td>
-                                        <td>100000</td>
-                                        <td>600</td>
-                                        <td>100</td>
-                                        <td>0</td>
-                                        <td>10</td>
-                                        <td class="text-end">6000000</td>
-                                        <td>
-                                            <a href="javascript:void(0);" class="delete-set"><img
-                                                    src="{% static 'assets/img/icons/delete.svg' %}" alt="svg"></a>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <input type="date" name="enddate" id="end_date" required>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-12 float-md-right">
-                            <div class="total-order">
-                                <ul>
-                                    <li>
-                                        <h4>Order Tax</h4>
-                                        <h5>INR 0.00 (0.00%)</h5>
-                                    </li>
-                                    <li>
-                                        <h4>Discount </h4>
-                                        <h5>INR 0.00</h5>
-                                    </li>
-                                    <li>
-                                        <h4>Shipping</h4>
-                                        <h5>INR 0.00</h5>
-                                    </li>
-                                    <li class="total">
-                                        <h4>Grand Total</h4>
-                                        <h5>INR 0.00</h5>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-3 col-sm-6 col-12">
-                            <div class="form-group">
-                                <label>Order Tax</label>
-                                <input type="text" value="10">
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-sm-6 col-12">
-                            <div class="form-group">
-                                <label>Discount</label>
-                                <input type="text" value="20">
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-sm-6 col-12">
-                            <div class="form-group">
-                                <label>Shipping</label>
-                                <input type="text" value="10">
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-sm-6 col-12">
-                            <div class="form-group">
-                                <label>Status</label>
-                                <select class="select">
-                                    <option>Sent</option>
-                                    <option>Inprogress</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-lg-12">
-                            <div class="form-group">
-                                <label>Description</label>
-                                <textarea class="form-control"></textarea>
-                            </div>
-                        </div>
-                        <div class="col-lg-12">
-                            <a href="javascript:void(0);" class="btn btn-submit me-2">Update</a>
-                            <a href="{% url 'quotationList' %}" class="btn btn-cancel">Cancel</a>
-                        </div>
-                    </div>
+                        
+                        <a class="btn btn-submit" href="https://bidplus.gem.gov.in/all-bids">Submit</a>
+                    </form>
                 </div>
             </div>
+
+
+
         </div>
     </div>
 </div>
+<script>
+document.getElementById('quotationForm').addEventListener('submit', function (e) {
+    e.preventDefault(); // Prevent default form submission
+
+    const formData = new FormData(this);
+
+    fetch('', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(HTTP error! status: ${response.status});
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = 'https://bidplus.gem.gov.in/all-bids'; // Redirect to GeM portal
+        } else {
+            alert(data.message); // Display the server error message
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+});
+</script>
 
 {% endblock %}

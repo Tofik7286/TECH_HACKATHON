@@ -26,14 +26,14 @@
                                     <img src="{% static 'assets/img/customer/customer5.jpg' %}" alt="img" id="blah">
                                     
                                     <div class="profileupload">
-                                        <input type="file" id="imgInp">
+                                        <input type="file" id="imgInp" disabled>
                                         <a href="javascript:void(0);"><img src="{% static 'assets/img/icons/edit-set.svg' %}"
                                                 alt="img"></a>
                                     </div>
                                 </div>
                                 <div class="profile-contentname">
-                                    <h2>Madhya Pradesh Police</h2>
-                                    <h4>Updates Your Photo and Personal Details.</h4>
+                                    <h2>{{ first_name }} {{ last_name }}</h2>
+                                    
                                 </div>
                             </div>
                           
@@ -43,44 +43,31 @@
                         <div class="col-lg-6 col-sm-12">
                             <div class="form-group">
                                 <label>First Name</label>
-                                <input type="text">
+                                <input type="text" value="{{ first_name }}" readonly>
                             </div>
                         </div>
                         <div class="col-lg-6 col-sm-12">
                             <div class="form-group">
                                 <label>Last Name</label>
-                                <input type="text" placeholder="Police">
+                                <input type="text" value="{{ last_name }}" readonly>
                             </div>
                         </div>
                         <div class="col-lg-6 col-sm-12">
                             <div class="form-group">
                                 <label>Email</label>
-                                <input type="text" placeholder="dgpmp@mppolice.gov.in">
+                                <input type="text" value="{{ email }}" readonly>
                             </div>
                         </div>
+                      
                         <div class="col-lg-6 col-sm-12">
                             <div class="form-group">
-                                <label>Phone</label>
-                                <input type="text" placeholder="0755 244 3655">
+                                <label>Username</label>
+                                <input type="text" value="{{ username }}" readonly>
                             </div>
                         </div>
-                        <div class="col-lg-6 col-sm-12">
-                            <div class="form-group">
-                                <label>User Name</label>
-                                <input type="text" placeholder="Madhya Pradesh Police">
-                            </div>
-                        </div>
-                        <div class="col-lg-6 col-sm-12">
-                            <div class="form-group">
-                                <label>Password</label>
-                                <div class="pass-group">
-                                    <input type="password" class=" pass-input">
-                                    <span class="fas toggle-password fa-eye-slash"></span>
-                                </div>
-                            </div>
-                        </div>
+                        
                         <div class="col-12">
-                            <a href="{% url 'index' %}" class="btn btn-submit me-2">Submit</a>
+                            {% comment %} <a href="{% url 'index' %}" class="btn btn-submit me-2">Submit</a> {% endcomment %}
                             <a href="{% url 'addquotation' %}" class="btn btn-cancel">Cancel</a>
                         </div>
                     </div>
